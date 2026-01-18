@@ -1,0 +1,1 @@
+"""Хранит обьекты sqlalchemy, pydantic"""
