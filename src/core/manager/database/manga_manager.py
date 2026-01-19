@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncEngine, AsyncSession
 from sqlalchemy.sql._typing import _TypedColumnClauseArgument
 from loguru import logger
 
-from ..entites.models import Manga, Language, Author, Genre, GenreManga, Chapter
-from ..entites.schemas import MangaDetailSchema, MangaOutputSchema, ChapterSchema
+from ...entites.models import Manga, Language, Author, Genre, GenreManga, Chapter
+from ...entites.schemas import MangaDetailSchema, MangaOutputSchema, ChapterSchema
 
 T = TypeVar("T")
 

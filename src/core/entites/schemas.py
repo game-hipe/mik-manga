@@ -53,12 +53,12 @@ class MangaSchema(BaseMangaSchema):
         genres (list[str]): Список жанров манги.
         author (str): Имя автора манги.
         language (str): Язык перевода манги.
-        chapters (list[str]): Список названий глав манги.
+        chapters (list[str]): Список ссылок на главы манги.
     """
     genres: list[str]
     author: str
     language: str
-    chapters: list[str]
+    chapters: list[HttpUrl]
 
 
 class MangaDetailSchema(MangaSchema):

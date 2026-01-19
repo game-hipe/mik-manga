@@ -1,30 +1,38 @@
-from loguru import logger
+from urllib.parse import urljoin
+
+from bs4 import BeautifulSoup
 
 from ...core.abstract import BaseSpider
-from ...core.entites.schemas import MangaSchema
-
+from ...shared import FetchError
+from .parser import MultiMangaParserMother
+from .find import MultiMangaFindEngine
 
 class MultiMangaSpider(BaseSpider):
     BASE_URL = 'https://multi-manga.today'
-    
-    async def get_manga(self, url: str) -> MangaSchema:
-        response = await self.engine.get(url, 'read')
-        if response is None:
-            logger.warning(
-                "Не удалось получить страницу"
-            )
-            return
-        
-        response
-        
-    async def find_manga(self, query):
-        return await super().find_manga(query)
-    
-    async def find_manga_genres(self, genres):
-        return await super().find_manga_genres(genres)
-    
-    async def get_manga_chapter(self, url):
-        return await super().get_manga_chapter(url)
+
+    def __init__(
+        self,
+        session,
+        parser: MultiMangaParserMother | None = None,
+        find_engine: MultiMangaFindEngine | None = None,
+        max_concurrents = None,
+        max_retries = None,
+        features = None
+    ):
+        super().__init__(
+            session,
+            parser or MultiMangaParserMother,
+            find_engine or MultiMangaFindEngine,
+            max_concurrents,
+            max_retries,
+            features
+        )
     
     async def get_genres(self):
-        return await super().get_genres()
+        if response := await self.engine.get(urljoin(self.BASE_URL, '/filter.html'), 'read'):
+            soup = BeautifulSoup(response, self.parser.features)
+            return [x.get_text(strip=True) for x in soup.select('select[name="n.m.tags"] option')]
+        
+        raise FetchError(
+            f"Не удалось получить список жанров с {urljoin(self.BASE_URL, '/filter.html')}"
+        )

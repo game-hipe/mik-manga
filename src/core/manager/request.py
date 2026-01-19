@@ -7,6 +7,7 @@ from aiohttp import ClientSession
 from aiohttp.client import _RequestOptions
 from aiohttp import ClientResponseError
 
+from cachetools import TTLCache
 from loguru import logger
 
 from ..entites.schemas import ProxySchema
@@ -28,6 +29,12 @@ class RequestManager:
     MAX_RETRIES: int = 3
     """Базовое значение, максимальное количество попыток."""
     
+    MAXSIZE: int = 128
+    """Базовое значение, максимального размера кэша."""
+    
+    TTL: float = 300
+    """Базовое значение, время жизни кэша."""
+    
     def __init__(
         self,
         session: ClientSession,
@@ -36,7 +43,9 @@ class RequestManager:
         max_retries: int | None = MAX_RETRIES,
         sleep_time: int | None = SLEEP_TIME,
         use_random: bool | None = USE_RANDOM,
-        proxy: list[ProxySchema] = []
+        proxy: list[ProxySchema] = [],
+        maxsize: int | None = MAXSIZE,
+        ttl: float | None = TTL
     ):
         """Ицилизация RequestManager
 
@@ -57,6 +66,11 @@ class RequestManager:
 
         self.semaphore = asyncio.Semaphore(self.max_concurrents)
         self.proxy = proxy
+        
+        self.cache = TTLCache(
+            maxsize = maxsize or self.MAXSIZE,
+            ttl = ttl or self.TTL
+        )
     
     @overload
     async def request(self, method: str, url: str, type: Literal["text"], **kwargs: Unpack[_RequestOptions]) -> str | None:
@@ -143,6 +157,12 @@ class RequestManager:
         Returns:
             str | bytes | None: Возращает данные с страницы
         """
+        if f'{method}{url}' in self.cache:
+            logger.info(
+                f"Используется кэш (url={url}, method={method})"
+            )
+            return self.cache[f'{method}{url}']
+        
         async with self.semaphore:
             logger.info(
                 f"Попытка получить страницу (url={url}, method={method})"
@@ -164,6 +184,7 @@ class RequestManager:
                         await asyncio.sleep(
                             self.sleep_time * (random.uniform(0, 1) if self.use_random else 1)
                         )
+                        self.cache[f'{method}{url}'] = result
                         return result
                         
                 except ClientResponseError as error:

@@ -4,3 +4,5 @@ class ParserError(Exception):
 class MissingRequiredAttributeError(ParserError):
     """Исключение, возникающее при отсутствии обязательного атрибута при парсинге."""
     
+class FetchError(Exception):
+    """Исключение, возникающее при ошибке при запросе."""

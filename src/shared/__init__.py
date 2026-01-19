@@ -3,11 +3,13 @@
 from ._config import config
 from ._errors import (
     ParserError,
-    MissingRequiredAttributeError
+    MissingRequiredAttributeError,
+    FetchError
 )
 
 from ._types import (
-    ReturnType
+    ReturnType,
+    FindMethod
 )
 
 __all__ = [
@@ -15,5 +17,7 @@ __all__ = [
     'config',
     'ParserError',
     'MissingRequiredAttributeError',
-    'ReturnType'
+    'ReturnType',
+    'FindMethod',
+    'FetchError'
 ]
