@@ -1,4 +1,4 @@
-﻿aiofiles==25.1.0
+aiofiles==25.1.0
 aiogram==3.24.0
 aiohappyeyeballs==2.6.1
 aiohttp==3.13.3
@@ -8,6 +8,7 @@ annotated-types==0.7.0
 attrs==25.4.0
 beautifulsoup4==4.14.3
 boltons==25.0.0
+cachetools==6.2.4
 certifi==2026.1.4
 colorama==0.4.6
 face==24.0.0

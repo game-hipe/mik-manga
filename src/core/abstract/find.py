@@ -27,9 +27,7 @@ from ..entites.schemas import BaseMangaSchema
 from .parser import BaseParserMother
 from ...shared import FindMethod
 
-__all__ = [
-    'BaseFindEngine'
-]
+__all__ = ["BaseFindEngine"]
 
 
 class BaseFindEngine(ABC):
@@ -54,13 +52,13 @@ class BaseFindEngine(ABC):
 
             # ... реализация других абстрактных методов
     """
-    
+
     MAX_SIZE: int = 32
     """Максимальный размер кэша"""
-    
+
     TTL: int = 300
     """Максимальное время жизни"""
-    
+
     def __init__(
         self,
         query: str | list[str],
@@ -69,7 +67,7 @@ class BaseFindEngine(ABC):
         parser: BaseParserMother,
         find_method: FindMethod,
         max_size: int | None = None,
-        ttl: int | None = None
+        ttl: int | None = None,
     ):
         """
         Инициализирует поисковый движок.
@@ -90,26 +88,25 @@ class BaseFindEngine(ABC):
         self.parser = parser
         self.engine = engine
         self.base_url = base_url
-        
+
         self.page_now = 1
         self.max_page = -1
-        
+
         if not isinstance(parser, BaseParserMother):
             raise TypeError(
-                f'{self.__class__.__name__} не является подклассом BaseParserMother'
+                f"{self.__class__.__name__} не является подклассом BaseParserMother"
             )
-        
+
         self.lock = asyncio.Lock()
         self.query = query
         self.find_method = find_method
-        self.cashe = TTLCache(
-            maxsize = max_size or self.MAX_SIZE,
-            ttl = ttl or self.TTL
-        )
-    
+        self.cashe = TTLCache(maxsize=max_size or self.MAX_SIZE, ttl=ttl or self.TTL)
+
     @classmethod
     @abstractmethod
-    async def find(cls, query: str, engine: RequestManager, base_url: str, parser: BaseParserMother) -> BaseFindEngine:
+    async def find(
+        cls, query: str, engine: RequestManager, base_url: str, parser: BaseParserMother
+    ) -> BaseFindEngine:  # noqa
         """
         Асинхронно выполняет поиск манги по текстовому запросу.
 
@@ -128,10 +125,16 @@ class BaseFindEngine(ABC):
         Raises:
             NotImplementedError: Если метод не реализован в подклассе.
         """
-    
+
     @classmethod
     @abstractmethod
-    async def find_genres(self, query: list[str], engine: RequestManager, base_url: str, parser: BaseParserMother) -> BaseFindEngine:
+    async def find_genres(
+        self,
+        query: list[str],
+        engine: RequestManager,
+        base_url: str,
+        parser: BaseParserMother,
+    ) -> BaseFindEngine:  # noqa
         """
         Асинхронно выполняет поиск манги по списку жанров.
 
@@ -149,7 +152,7 @@ class BaseFindEngine(ABC):
         Raises:
             NotImplementedError: Если метод не реализован в подклассе.
         """
-    
+
     async def next_page(self) -> list[BaseMangaSchema]:
         """
         Переходит на следующую страницу результатов поиска.
@@ -163,7 +166,7 @@ class BaseFindEngine(ABC):
             select_page: Метод, который выполняет фактический переход на страницу.
         """
         return await self.select_page(self.page_now + 1)
-    
+
     async def back_page(self) -> list[BaseMangaSchema]:
         """
         Возвращается на предыдущую страницу результатов поиска.
@@ -177,7 +180,7 @@ class BaseFindEngine(ABC):
             select_page: Метод, который выполняет фактический переход на страницу.
         """
         return await self.select_page(self.page_now - 1)
-    
+
     async def current_page(self) -> list[BaseMangaSchema]:
         """
         Возвращается текущую страницу.
@@ -189,7 +192,7 @@ class BaseFindEngine(ABC):
             select_page: Метод, который выполняет фактический переход на страницу.
         """
         return await self.select_page(self.page_now)
-    
+
     async def select_page(self, page: int) -> list[BaseMangaSchema]:
         """
         Переходит на указанную страницу результатов поиска.
@@ -211,41 +214,33 @@ class BaseFindEngine(ABC):
             и записывается сообщение об ошибке в лог.
         """
         if page < 1:
-            logger.warning(
-                f"Номер страницы не может быть меньше 1"
-            )
+            logger.warning("Номер страницы не может быть меньше 1")
             return []
-        
+
         elif page > self.max_page:
-            logger.warning(
-                f"Количество страниц не может быть больше {self.max_page}"
-            )
+            logger.warning(f"Количество страниц не может быть больше {self.max_page}")
             return []
-            
+
         await self.update_page(page)
-            
+
         if page in self.cashe:
-            logger.info(
-                f"Страница {page} уже загружена"
-            )
+            logger.info(f"Страница {page} уже загружена")
             return self.cashe[page]
-        
-        if (response := await self.engine.get(self._build_page(), 'read')) is None:
-            logger.error(
-                "Не удалось получить страницу"
-            )
+
+        if (response := await self.engine.get(self._build_page(), "read")) is None:
+            logger.error("Не удалось получить страницу")
             return []
-        
+
         result = self.parse_page(response)
         self.cashe[page] = result
-        
+
         return result
-    
+
     async def update_page(self, page: int) -> None:
         """
         Обновляет номер текущей страницы.
         """
-        
+
         async with self.lock:
             self.page_now = page
 
@@ -266,7 +261,7 @@ class BaseFindEngine(ABC):
             NotImplementedError: Если метод не реализован в подклассе.
         """
         return self.parser.parse_page(markup)
-    
+
     @abstractmethod
     def get_max_page(self, markup: _IncomingMarkup) -> int:
         """
@@ -275,7 +270,7 @@ class BaseFindEngine(ABC):
         Абстрактный метод, который должен быть реализован в подклассах.
         Определяет количество страниц на основе HTML-разметки.
         """
-    
+
     @abstractmethod
     def _build_page(self) -> str:
         """
@@ -290,7 +285,7 @@ class BaseFindEngine(ABC):
         Raises:
             NotImplementedError: Если метод не реализован в подклассе.
         """
-    
+
     def __repr__(self):
         return (
             f"{self.__class__.__name__}("
@@ -298,6 +293,7 @@ class BaseFindEngine(ABC):
             f"max_page={self.max_page}, "
             f"loaded={list(self.cashe.keys())}"
         )
+
     async def all_page(self) -> AsyncGenerator[list[BaseMangaSchema], None]:
         for page in range(1, self.max_page + 1):
             yield await self.select_page(page)

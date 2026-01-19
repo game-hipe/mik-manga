@@ -12,7 +12,8 @@ cp configuration-example.yaml > configuration.yaml
 
 nano configuration.yaml # Вставтье ваш бот токен, для работы.
 
-docker-compose up . # Либо docker compose up .
+docker-compose build --no-cache
+docker-compose up -d
 ```
 
 ## 2 Способ через прямой python (python3.13.X+)
@@ -29,3 +30,6 @@ python main.py
 
 > [!WARNING]
 > Проект является просто демонстрацие своих сил в BackEnd, и в ТГ ботах, поэтому не бейте тапком
+
+> [!WARNING]
+> На данный момент, ни паук, ни тг бот не готов, поэтому запускать ТГ бота бессмысленно!

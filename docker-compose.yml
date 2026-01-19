@@ -1,0 +1,11 @@
+
+services:
+  app:
+    build: .
+    container_name: mik-spider
+    volumes:
+      - mik-data:/app/var
+    restart: unless-stopped
+
+volumes:
+  mik-data:
