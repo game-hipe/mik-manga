@@ -1,11 +1,19 @@
 import asyncio
 
-import aiohttp
-
+from loguru import logger
 
 async def main():
-    async with aiohttp.ClientSession() as session:  # noqa
-        print("FuckWorld!")
+    print("Hello World!") # Тут будет запуск
 
-
-asyncio.run(main())
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+        
+    except KeyboardInterrupt:
+        logger.info("Завершение работы...")
+        
+    except Exception as e:
+        logger.critical(e)
+        
+    finally:
+        logger.info("Завершение работы...")

@@ -5,12 +5,15 @@ logging:
   rotation: "15 MB"  # Размер файла лога перед ротацией
   retention: "30 days"  # Время хранения логов
 
-parser:
-  features: "html.parser" # Базовый движок парсера
-
 api:
   telegram: "123456789:QWERTYUIASFGHJKL"  # Токен Telegram бота
   admins: [1234] # Суперпользователи бота.
+  gemini_api: "ASDFGHJKL_CVTBNYHJMK<L"
 
 database:
   url: "sqlite+aiosqlite:///var/database.db" # URL для db, sqlalchemy
+
+spider:
+  max_concurrents: 10 # Максимальное количество одновременных запросов
+  max_retries: 3 # Максимальное количество попыток
+  features: "html.parser" # Базовый движок парсера

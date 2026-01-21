@@ -15,14 +15,21 @@ class LoggingConfig(BaseModel):
     retention: str
 
 
+class SpiderConfig(BaseModel):
+    max_concurrents: int | None = None
+    max_retries: int | None = None
+    features: str | None = None
+
+
 class Config(BaseModel):
     telegram: str
     admins: list[int]
 
     database: str
-    features: str
 
+    gemini_api: str
     logging_config: LoggingConfig
+    spider_config: SpiderConfig
 
 
 def load_config(config_path: str | Path = "configuration.yaml"):
@@ -35,8 +42,9 @@ def load_config(config_path: str | Path = "configuration.yaml"):
         telegram=glom(_config, "api.telegram"),
         admins=glom(_config, "api.admins"),
         database=glom(_config, "database.url"),
-        features=glom(_config, "parser.features"),
+        gemini_api=glom(_config, "api.gemini_api"),
         logging_config=glom(_config, "logging"),
+        spider_config=glom(_config, "spider"),
     )
 
 
